@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button } from '@mui/material';
+import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge } from '@mui/material';
 import PropTypes from 'prop-types';
-import Link from 'next/link';
 // components
 import Profile from './Profile';
 import { IconBellRinging, IconMenu } from '@tabler/icons-react';
@@ -10,25 +9,25 @@ interface ItemType {
   toggleMobileSidebar:  (event: React.MouseEvent<HTMLElement>) => void;
 }
 
+const AppBarStyled = styled(AppBar)(({ theme }) => ({
+  boxShadow: 'none',
+  background: 'rgba(9, 9, 11, 0.7)',
+  backdropFilter: 'blur(12px)',
+  borderBottom: '1px solid #27272A',
+  justifyContent: 'center',
+  [theme.breakpoints.up('lg')]: {
+    minHeight: '64px',
+  },
+}));
+const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
+  width: '100%',
+  color: theme.palette.text.primary,
+}));
+
 const Header = ({toggleMobileSidebar}: ItemType) => {
 
   // const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   // const lgDown = useMediaQuery((theme) => theme.breakpoints.down('lg'));
-
-
-  const AppBarStyled = styled(AppBar)(({ theme }) => ({
-    boxShadow: 'none',
-    background: theme.palette.background.paper,
-    justifyContent: 'center',
-    backdropFilter: 'blur(4px)',
-    [theme.breakpoints.up('lg')]: {
-      minHeight: '70px',
-    },
-  }));
-  const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
-    width: '100%',
-    color: theme.palette.text.secondary,
-  }));
 
   return (
     <AppBarStyled position="sticky" color="default">
@@ -62,9 +61,6 @@ const Header = ({toggleMobileSidebar}: ItemType) => {
         </IconButton>
         <Box flexGrow={1} />
         <Stack spacing={1} direction="row" alignItems="center">
-          <Button variant="contained" component={Link} href="/authentication/login"   disableElevation color="primary" >
-            Login
-          </Button>
           <Profile />
         </Stack>
       </ToolbarStyled>

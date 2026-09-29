@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "887a5e50-0862-4408-89b8-1ca5e171a846",
+  "status": "current",
+  "command": "deliver",
+  "type": "architecture",
+  "input": "D:\\Linkedin Automation\\BuildOS\\package\\candidate.json",
+  "output": "D:\\Linkedin Automation\\BuildOS\\package\\output.html",
+  "specification": {
+    "sha256": "26d13a415603b8b4b11e13406e76be648e860e65b95841bde6d5f0a035709012",
+    "bytes": 1777
+  },
+  "artifact": {
+    "sha256": "703bfafe6d2c017eb6fa0f301a318597d117348f447e653534c2f46e5306121e",
+    "bytes": 754217
+  }
+}

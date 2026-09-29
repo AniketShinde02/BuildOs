@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Users can only read/write their own user document
+    match /Users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Settings are tied to a specific user (document ID = userId)
+    match /settings/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Connected accounts: document ID IS the userId
+    match /connected_accounts/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Drafts belong to a specific user
+    // Server-side writes via Admin SDK bypass these rules (correct behavior)
+    match /Drafts/{draftId} {
+      allow read, update, delete: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+
+    // Publish Logs belong to a specific user
+    match /PublishLogs/{logId} {
+      allow read: if isAuthenticated() && request.auth.uid == resource.data.userId;
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.userId;
+    }
+    
+    // System settings: public read, no client writes
+    match /system_settings/config {
+      allow read: if true;
+      allow write: if false;
+    }
+  }
+}

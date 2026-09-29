@@ -2,10 +2,9 @@ import {
   IconAperture,
   IconCopy,
   IconLayoutDashboard,
-  IconLogin,
-  IconMoodHappy,
   IconTypography,
-  IconUserPlus,
+  IconPhoto,
+  IconCalendarEvent,
 } from "@tabler/icons-react";
 
 import { uniqueId } from "lodash";
@@ -13,66 +12,56 @@ import { uniqueId } from "lodash";
 const Menuitems = [
   {
     navlabel: true,
-    subheader: "HOME",
+    subheader: "BUILD OS",
   },
-
   {
     id: uniqueId(),
-    title: "Dashboard",
+    title: "Content Queue",
     icon: IconLayoutDashboard,
     href: "/",
   },
   {
-    navlabel: true,
-    subheader: "UTILITIES",
+    id: uniqueId(),
+    title: "30-Day Auto-Queue",
+    icon: IconCalendarEvent,
+    href: "/schedule",
   },
   {
     id: uniqueId(),
-    title: "Typography",
-    icon: IconTypography,
-    href: "/utilities/typography",
+    title: "Media Library",
+    icon: IconPhoto,
+    href: "/media",
   },
   {
     id: uniqueId(),
-    title: "Shadow",
-    icon: IconCopy,
-    href: "/utilities/shadow",
-  },
-  {
-    navlabel: true,
-    subheader: "AUTH",
-  },
-  {
-    id: uniqueId(),
-    title: "Login",
-    icon: IconLogin,
-    href: "/authentication/login",
-  },
-  {
-    id: uniqueId(),
-    title: "Register",
-    icon: IconUserPlus,
-    href: "/authentication/register",
-  },
-  {
-    navlabel: true,
-    subheader: " EXTRA",
-  },
-  {
-    id: uniqueId(),
-    title: "Icons",
-    icon: IconMoodHappy,
-    href: "/icons",
-  },
-  {
-    id: uniqueId(),
-    title: "Sample Page",
+    title: "Campaigns",
     icon: IconAperture,
-    href: "/sample-page",
+    href: "/campaigns",
   },
-
+  {
+    id: uniqueId(),
+    title: "Visual Studio",
+    icon: IconPhoto,
+    href: "/studio",
+  },
+  {
+    id: uniqueId(),
+    title: "Accounts",
+    icon: IconAperture,
+    href: "/accounts",
+  },
+  {
+    id: uniqueId(),
+    title: "Publish Logs",
+    icon: IconTypography,
+    href: "/logs",
+  },
+  {
+    id: uniqueId(),
+    title: "Settings",
+    icon: IconCopy,
+    href: "/settings",
+  },
 ];
 
 export default Menuitems;
-
-

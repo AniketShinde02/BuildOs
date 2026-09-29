@@ -1,0 +1,53 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/utils/firebase';
+import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+
+export async function POST(req: Request) {
+  try {
+    // 1. Fetch GitHub events from the last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const eventsRef = collection(db, 'Events');
+    // For a real app, query by createdAt >= sevenDaysAgo. 
+    // Here we just fetch all events for the simulation since it's a new db.
+    const q = query(eventsRef);
+    const querySnapshot = await getDocs(q);
+    
+    const events = querySnapshot.docs.map(doc => doc.data());
+    
+    if (events.length === 0) {
+      return NextResponse.json({ message: 'No events found to summarize' }, { status: 404 });
+    }
+
+    // 2. Format events for the prompt
+    const eventSummary = events.map(e => `- ${e.eventType} on ${e.payload?.repository?.name || 'repo'}`).join('\n');
+    
+    // 3. Generate content with Gemini
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const prompt = `You are a developer sharing a weekly recap on LinkedIn/Twitter.
+Here are your GitHub events from the past week:
+${eventSummary}
+
+Write a professional, concise, and engaging social media post (under 500 characters) summarizing this activity. Do not include hashtags.`;
+    
+    const result = await model.generateContent(prompt);
+    const generatedText = result.response.text();
+    
+    // 4. Save to Drafts
+    await addDoc(collection(db, 'Drafts'), {
+      content: generatedText,
+      platform: 'LinkedIn',
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+
+    return NextResponse.json({ success: true, message: 'Weekly recap generated' });
+  } catch (error: any) {
+    console.error('Error generating recap:', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}

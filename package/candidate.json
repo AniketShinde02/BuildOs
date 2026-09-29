@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "BuildOS Architecture",
+    "output": "buildos-arch.html"
+  },
+  "layout": {
+    "mode": "grid",
+    "cols": 3,
+    "gapX": 60,
+    "gapY": 80,
+    "cellW": 280,
+    "cellH": 80
+  },
+  "components": [
+    { "id": "ui", "type": "frontend", "label": "Next.js UI", "sublabel": "React Server Components", "row": 0, "col": 1, "size": [160, 60] },
+    { "id": "api-routes", "type": "backend", "label": "API Routes", "sublabel": "Edge / Node", "row": 1, "col": 1, "size": [160, 60] },
+    { "id": "humanizer-engine", "type": "backend", "label": "HumanizerEngine", "sublabel": "Anti-AI Detector", "row": 1, "col": 0, "size": [160, 60] },
+    { "id": "creative-os", "type": "backend", "label": "CreativeOSEngines", "sublabel": "11-Engine Render", "row": 1, "col": 2, "size": [160, 60] },
+    { "id": "ai-fallback", "type": "backend", "label": "AI Fallback", "sublabel": "Gemini/SenseNova/Mistral", "row": 2, "col": 1, "size": [160, 60] },
+    { "id": "tavily", "type": "external", "label": "Tavily Research", "sublabel": "Trend Context", "row": 2, "col": 2, "size": [160, 60] },
+    { "id": "firebase", "type": "database", "label": "Firestore", "sublabel": "Settings & Drafts", "row": 2, "col": 0, "size": [160, 60] }
+  ],
+  "connections": [
+    { "from": "ui", "to": "api-routes", "label": "POST", "labelDy": 24 },
+    { "from": "api-routes", "to": "humanizer-engine", "label": "Sanitize text" },
+    { "from": "api-routes", "to": "creative-os", "label": "Design Spec" },
+    { "from": "api-routes", "to": "ai-fallback", "label": "LLM text", "labelDy": 24 },
+    { "from": "api-routes", "to": "firebase", "label": "Save drafts" },
+    { "from": "api-routes", "to": "tavily", "label": "Search" }
+  ]
+}
