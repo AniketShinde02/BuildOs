@@ -14,6 +14,10 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [hasLinkedIn, setHasLinkedIn] = useState(false);
   
+  // Environment Variables UI State
+  const [envOpenRouterKey, setEnvOpenRouterKey] = useState('');
+  const [envGeminiKey, setEnvGeminiKey] = useState('');
+  
   // LinkedIn Modal State
   const [isLinkedInModalOpen, setIsLinkedInModalOpen] = useState(false);
   const [linkedinToken, setLinkedinToken] = useState("");
@@ -107,7 +111,7 @@ const SettingsPage = () => {
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h5" fontWeight={700} mb={1}>AI Generation Tone</Typography>
                 <Typography variant="body2" color="textSecondary" mb={3}>
-                  This controls how Gemini writes your drafts. Describe your personal brand voice.
+                  This controls how the AI writes your drafts. Describe your personal brand voice.
                 </Typography>
                 <TextField 
                   fullWidth 
@@ -150,6 +154,55 @@ const SettingsPage = () => {
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} p={2} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: '8px' }}>
                   <Typography>X (Twitter)</Typography>
                   <Button variant="outlined" color="primary" disabled>Coming Soon</Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Environment Variables Card */}
+          <Grid size={{ xs: 12 }}>
+            <Card sx={{ borderRadius: "12px", border: '1px solid', borderColor: 'divider', boxShadow: 'none' }}>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h5" fontWeight={700} mb={1}>Environment Variables (AI Models)</Typography>
+                <Typography variant="body2" color="textSecondary" mb={3}>
+                  Manage your private API keys for external providers. These will be injected securely at runtime.
+                </Typography>
+                
+                <Grid container spacing={3}>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField 
+                      fullWidth 
+                      label="OpenRouter API Key"
+                      type="password"
+                      placeholder="sk-or-v1-..."
+                      value={envOpenRouterKey}
+                      onChange={(e) => setEnvOpenRouterKey(e.target.value)}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField 
+                      fullWidth 
+                      label="Google Gemini API Key"
+                      type="password"
+                      placeholder="AIzaSy..."
+                      value={envGeminiKey}
+                      onChange={(e) => setEnvGeminiKey(e.target.value)}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '12px' } }}
+                    />
+                  </Grid>
+                </Grid>
+                
+                <Box mt={3} display="flex" justifyContent="flex-end">
+                  <Button 
+                    variant="contained" 
+                    color="primary" 
+                    disabled={saving}
+                    onClick={() => showToast("API Keys will be wired up later", "info")}
+                    sx={{ fontWeight: 700, borderRadius: '8px' }}
+                  >
+                    Save API Keys
+                  </Button>
                 </Box>
               </CardContent>
             </Card>

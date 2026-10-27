@@ -1,5 +1,5 @@
 import { DesignSpecification, LayoutFamily, DesignWhySpecification } from "../models/DesignSpecification";
-import { generateContentWithFallback } from "@/lib/utils/aiFallback";
+import { generateContent } from "@/lib/ai/gateway";
 
 
 // Master Registry of 100+ Layout Variants across 10 Super-Families
@@ -67,9 +67,9 @@ export class CreativeOperatingSystem {
     // Attempt multi-model LLM generation first
     try {
       if (cleanPrompt.length > 3) {
-        const geminiSpec = await this.tryGenerateWithGemini(prompt, platform);
-        if (geminiSpec && geminiSpec.why && geminiSpec.spec?.layoutFamily) {
-          spec = geminiSpec;
+        const aiSpec = await this.tryGenerateWithAI(prompt, platform);
+        if (aiSpec && aiSpec.why && aiSpec.spec?.layoutFamily) {
+          spec = aiSpec;
         }
       }
     } catch (e) {
@@ -77,8 +77,11 @@ export class CreativeOperatingSystem {
     }
 
     if (!spec) {
-      // 11-Stage Heuristic Synthesis Engine (Proves distinct aesthetic variety per prompt theme)
-      spec = this.synthesizeHeuristicSpecification(prompt, platform);
+      throw new Error(JSON.stringify({
+        status: "FAILED",
+        stage: "FAST_TEXT",
+        reason: "AI_TIMEOUT_OR_FAILURE"
+      }));
     }
 
     // Force carousel format if prompt mentions carousel
@@ -96,27 +99,62 @@ export class CreativeOperatingSystem {
     return spec;
   }
 
-  private static async tryGenerateWithGemini(prompt: string, platform: string): Promise<DesignSpecification | null> {
+  private static async tryGenerateWithAI(prompt: string, platform: string): Promise<DesignSpecification | null> {
     const systemInstruction = `You are the BuildOS AI Creative Operating System, operating 11 dedicated design engines.
-Analyze this prompt and return ONLY valid JSON matching the DesignSpecification schema with complete "why" design rationale.
-Choose layoutFamily from: linear-tech, editorial-magazine, swiss-grid, neo-brutalist, glass-surface, warm-humanist, saas-showcase, carousel-playbook, typographic-monument, dynamic-hybrid.
+Analyze this prompt and return ONLY valid JSON matching the exact schema below. Do not wrap the JSON in any parent object.
+
+REQUIRED JSON SCHEMA:
+{
+  "spec": {
+    "layoutFamily": "<one of: linear-tech, editorial-magazine, swiss-grid, neo-brutalist, glass-surface, warm-humanist, saas-showcase, carousel-playbook, typographic-monument, dynamic-hybrid>",
+    "variantId": "<string>",
+    "color": { "background": "", "surface": "", "primary": "", "secondary": "", "textPrimary": "", "textSecondary": "", "accent": "", "border": "", "gradient": "" },
+    "typography": { 
+      "headline": { "family": "", "weight": 800, "tracking": "", "leading": "", "size": 64 },
+      "body": { "family": "", "weight": 400, "tracking": "", "leading": "", "size": 24 },
+      "caption": { "family": "", "weight": 600, "size": 16 },
+      "scaleRatio": 1.333, "scaleName": ""
+    },
+    "composition": { "padding": "", "gap": 24, "columns": 1, "flowDirection": "column", "safeZones": { "top": 60, "right": 60, "bottom": 80, "left": 60 }, "align": "left" },
+    "assets": { "showBadge": true, "badgeText": "", "backgroundPattern": "none", "watermarkText": "", "showProgressDots": true, "totalSlides": 5, "currentSlide": 1, "showWindowControls": false }
+  },
+  "content": {
+    "title": "<punchy, high-converting hook (max 4-8 words)>",
+    "subtitle": "<string>",
+    "points": [ { "label": "", "text": "" } ],
+    "ctaText": "<string>"
+  },
+  "why": {
+    "creativeDirectionWhy": "", "brandStrategyWhy": "", "visualStrategyWhy": "", "layoutWhy": "",
+    "typographyWhy": "", "colorPsychologyWhy": "", "compositionWhy": "", "assetSelectionWhy": "",
+    "platformOptimizationWhy": "", "humanizationWhy": "", "qualityScoringWhy": ""
+  },
+  "qualityScore": { "overall": 90, "contrastScore": 90, "hierarchyScore": 90, "balanceScore": 90, "humanTouchScore": 90, "critique": "" }
+}
+
 CRITICAL: The 'content.title' must be a punchy, high-converting hook (max 4-8 words). Do NOT simply echo the user's prompt or use ellipsis (...) truncation.
 Do NOT default to orange. Tailor color psychology to the subject matter.`;
 
     const userPrompt = `Prompt: ${prompt}\nTarget Platform: ${platform}`;
-    const text = await generateContentWithFallback({
+    const result = await generateContent({
       systemInstruction,
       prompt: userPrompt,
-      responseMimeType: "application/json"
+      capability: 'DESIGN_SPEC',
+      structuredOutput: true
     });
 
-    if (text) {
+    if (result.text) {
       try {
-        const cleanedJson = text.replace(/```json\n?|\n?```/gi, '').trim();
+        const cleanedJson = result.text.replace(/```json\n?|\n?```/gi, '').trim();
         const parsed = JSON.parse(cleanedJson);
-        if (parsed && parsed.spec && parsed.why) return parsed as DesignSpecification;
+        if (parsed && parsed.spec && parsed.why) {
+           return parsed as DesignSpecification;
+        } else {
+           console.warn("[CreativeOSEngines] JSON validation failed. Output:", JSON.stringify(parsed, null, 2));
+        }
       } catch (parseError) {
         console.warn("[CreativeOSEngines] JSON parsing failed after markdown cleanup. Triggering deterministic fallback:", parseError);
+        console.warn("Raw Output was:", result.text);
       }
     }
     return null;

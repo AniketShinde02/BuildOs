@@ -1,10 +1,6 @@
 'use server';
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const XAI_API_KEY = process.env.XAI_API_KEY || "";
-const SENSENOVA_API_KEY = process.env.SENSENOVA_API_KEY || "";
+import { generateContentWithFallback } from '@/lib/ai/gateway';
 
 export type DesignType = 'infographic' | 'quote' | 'banner' | 'carousel';
 
@@ -42,67 +38,18 @@ Output strictly valid JSON with NO markdown blocks and NO formatting outside the
   let rawText = "";
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash", generationConfig: { responseMimeType: "application/json" } });
-    const result = await model.generateContent([
-      { text: systemPrompt },
-      { text: `Raw Idea: ${prompt}` }
-    ]);
+    const result = await generateContentWithFallback({
+      systemInstruction: systemPrompt,
+      prompt: `Raw Idea: ${prompt}`,
+      responseMimeType: "application/json",
+      requiredCapability: 'STRUCTURED_CONTENT'
+    });
     
-    if (result && result.response.text()) {
-      rawText = result.response.text();
+    if (result) {
+      rawText = result;
     }
   } catch (err) {
-    console.warn("Gemini CreativeDirector failed, trying Grok...", err);
-  }
-
-  // Fallback to SenseNova
-  if (!rawText && SENSENOVA_API_KEY) {
-    try {
-      const snRes = await fetch("https://token.sensenova.ai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SENSENOVA_API_KEY}` },
-        body: JSON.stringify({
-          model: "sensenova-6.8-flash-lite",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Raw Idea: ${prompt}` }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
-
-      if (snRes.ok) {
-        const snData = await snRes.json();
-        rawText = snData.choices?.[0]?.message?.content || "";
-      }
-    } catch (err) {
-      console.error("SenseNova CreativeDirector fallback failed", err);
-    }
-  }
-
-  // Fallback to Grok
-  if (!rawText && XAI_API_KEY) {
-    try {
-      const xaiRes = await fetch("https://api.x.ai/v1/chat/completions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${XAI_API_KEY}` },
-        body: JSON.stringify({
-          model: "grok-2-latest",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Raw Idea: ${prompt}` }
-          ],
-          response_format: { type: "json_object" }
-        })
-      });
-
-      if (xaiRes.ok) {
-        const xaiData = await xaiRes.json();
-        rawText = xaiData.choices?.[0]?.message?.content || "";
-      }
-    } catch (err) {
-      console.error("Grok CreativeDirector fallback failed", err);
-    }
+    console.error("CreativeDirector generation failed", err);
   }
 
   // Final fallback (if everything fails)

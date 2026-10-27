@@ -10,7 +10,7 @@ export async function GET(req: Request) {
   }
 
   const redirectUri = `${protocol}://${host}/api/auth/linkedin/callback`;
-  const scope = "w_member_social r_liteprofile r_emailaddress";
+  const scope = "w_member_social r_liteprofile r_emailaddress w_organization_social rw_organization_admin";
   const state = Math.random().toString(36).substring(7);
 
   const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scope)}`;

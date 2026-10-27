@@ -4,13 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "dev:services": "docker compose -p linkedinautomation up -d",
-    "dev:all": "docker compose -p linkedinautomation up -d && next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "agentation:init": "agentation init",
-    "agentation:sync": "agentation sync"
+    "agentation:sync": "agentation sync",
+    "ai:benchmark": "npx tsx scripts/benchmark.ts",
+    "ai:doctor": "npx tsx scripts/ai-doctor.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -29,8 +29,10 @@
     "eslint-config-next": "16.0.3",
     "firebase": "^12.16.0",
     "firebase-admin": "^14.2.0",
+    "framer-motion": "^13.4.5",
     "lodash": "^4.17.21",
     "next": "^16.0.3",
+    "prop-types": "^15.8.1",
     "react": "^19.2.0",
     "react-apexcharts": "1.8.0",
     "react-dom": "^19.2.0",
@@ -46,6 +48,7 @@
     "agentation": "^3.1.2",
     "agentation-monorepo": "github:benjitaylor/agentation",
     "baseline-browser-mapping": "^2.11.4",
-    "boneyard-js": "^1.10.0"
+    "boneyard-js": "^1.10.0",
+    "dotenv": "^18.0.4"
   }
 }

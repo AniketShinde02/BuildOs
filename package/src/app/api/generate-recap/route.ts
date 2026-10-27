@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/utils/firebase';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { collection, query, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { generateContentWithFallback } from '@/lib/ai/gateway';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
-
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     // 1. Fetch GitHub events from the last 7 days
     const sevenDaysAgo = new Date();
@@ -26,16 +24,19 @@ export async function POST(req: Request) {
     // 2. Format events for the prompt
     const eventSummary = events.map(e => `- ${e.eventType} on ${e.payload?.repository?.name || 'repo'}`).join('\n');
     
-    // 3. Generate content with Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-    const prompt = `You are a developer sharing a weekly recap on LinkedIn/Twitter.
-Here are your GitHub events from the past week:
-${eventSummary}
-
-Write a professional, concise, and engaging social media post (under 500 characters) summarizing this activity. Do not include hashtags.`;
+    // 3. Generate content with AI Gateway
+    const systemPrompt = "You are a developer sharing a weekly recap on LinkedIn/Twitter.";
+    const userPrompt = `Here are your GitHub events from the past week:\n${eventSummary}\n\nWrite a professional, concise, and engaging social media post (under 500 characters) summarizing this activity. Do not include hashtags.`;
     
-    const result = await model.generateContent(prompt);
-    const generatedText = result.response.text();
+    const generatedText = await generateContentWithFallback({
+      systemInstruction: systemPrompt,
+      prompt: userPrompt,
+      requiredCapability: 'FAST_COPY'
+    });
+    
+    if (!generatedText) {
+      throw new Error("All AI engines failed to generate the recap.");
+    }
     
     // 4. Save to Drafts
     await addDoc(collection(db, 'Drafts'), {

@@ -1,0 +1,17 @@
+{
+  "name": "linkedin-automation-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix BuildOS/package",
+    "dev:services": "npm run dev:services --prefix BuildOS/package",
+    "dev:all": "npm run dev:all --prefix BuildOS/package",
+    "build": "npm run build --prefix BuildOS/package",
+    "start": "npm run start --prefix BuildOS/package",
+    "install-all": "npm install --prefix BuildOS/package"
+  },
+  "devDependencies": {
+    "agentation": "^3.1.2",
+    "boneyard-js": "^1.10.0"
+  }
+}

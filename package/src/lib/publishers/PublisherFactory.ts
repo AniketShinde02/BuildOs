@@ -57,8 +57,6 @@ export class PublisherFactory {
         return null;
       };
 
-      const providerConfig = PLATFORM_REGISTRY[platform as ProviderId];
-
       // 1. Strict resolution for LinkedIn
       if (platform === "linkedin") {
         const liData = await fetchConnection("linkedin");

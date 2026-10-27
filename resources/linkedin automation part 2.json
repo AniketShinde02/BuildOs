@@ -1,0 +1,349 @@
+{
+  "name": "linkedin automation part 2",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate materials for my next LinkedIn post.\n\nuse tool perplexity to generate new content idea .\nCome up with a new, super valuable and concrete post, and prepare all the needed materials for it:\n- idea\n- title\n- text\n- image description\n\n\nBegin:",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=ROLE: You're an expert in AI Automation content creation with 10 years of experience. You've built viral content that has educated millions of learners about AI Agents, n8n workflows, and practical automation systems used by businesses and creators.\n\nOBJECTIVE: Your goal is to write a 1) name, 2) idea, 3) title, 4) text, and 5) image description for my next LinkedIn Post. They should be super valuable to my audience.\n\nSCENARIO: I run a LinkedIn blog about AI Automation, n8n workflows, and AI Agents. My audience is developers, automation enthusiasts, solopreneurs, startup founders, tech freelancers, and creators who want to automate their business systems and learn how to use AI effectively. My goal is to teach them how to build AI-powered automations, integrate systems like CRMs, and save hours of manual work using n8n and AI Agents.\n\nI have 4 main buckets of content on my page:\n1) timeless principles. ideas for these posts are taken from foundational automation philosophies and modern productivity frameworks (like “Build Once, Scale Forever” or “Humans + Machines > Machines Alone”).\n2) case studies. breakdowns of real-world automation setups and workflows that transformed productivity for individuals or teams.\n3) growth hacks. latest tools, AI agent tricks, and workflow shortcuts that save time or multiply results.\n4) controversial takes. posts that challenge common beliefs like “Automation kills creativity” or “AI will replace jobs.”\n\nEvery post I create focuses on one of these four buckets — making my content diverse, practical, and deeply valuable for anyone building in AI automation.\n\nEXPECTATION: Write me 1) name (short name for the post, less than 50 characters), 2) idea (detailed description in 3 sentences max), 3) title (the first sentence of the post, less than 80 characters, it should be ultra hooking), 4) full text of the post, 5) image description (the image is the first thing people will look at, so make it ultra hooking; write the image description to be super clear and ultra simple, so the AI image generator will precisely know what to generate; the image should be minimalistic) for a 200-300 words LinkedIn post from one of the content buckets described above.\nMake sure to have great: hook, retention, and reward at the end.\nThe post should clearly lead to an insight about automation, AI agents, or n8n.\n\nYour output should be in the JSON format.\nIdea should always start with a category: Timeless principle, Case study, Growth hack, Controversial take.\n\nExample output:\n{\"name\": \"Build Once, Scale Forever\",\n\"idea\": \"Timeless principle: Automation is modern leverage. It allows individuals and small teams to perform tasks at the scale of large enterprises by building once and executing infinitely. Using n8n or custom AI agents, one can create systems that handle repetitive work, freeing humans to focus on strategy and innovation.\",\n\"title\": \"What if your workflow kept working while you slept?\",\n\"text\": \"What if your workflow kept working while you slept?\\n\\nImagine waking up to find your leads followed up, reports sent, and clients onboarded — automatically.\\n\\nThat’s not magic, that’s automation.\\n\\nAI Agents and tools like n8n make it possible to scale your efforts without scaling your hours.\\n\\nMost people still do repetitive work manually — sending DMs, copying data, replying to emails. But automation builders have flipped the game.\\n\\nThey build once, and let the system run forever.\\n\\nThe mindset shift is this:\\n\\n➡️ Stop trading time for output.\\n➡️ Start building systems that work for you.\\n\\nIn every automation I teach, the goal is simple — save 1 hour today to gain 100 tomorrow.\\n\\nBecause time is your most expensive subscription.\\n\\nSo… what’s one task you’ll automate this week?\",\n\"image\": \"Black background with soft grainy film texture. A human sleeping peacefully on one side of the frame, while glowing holographic AI agents are busy working on futuristic digital dashboards beside them. Blue and green neon tones light the scene. Text at the center reads 'WORK WHILE YOU SLEEP' in clean Inter Bold font. Minimal, cinematic, and futuristic style.\"}\n\nNOTES:\n- THE BACKGROUND OF THE IMAGE SHOULD ALWAYS BE BLACK AND DARK GRAINY FILM\nTo accomplish your task you can use the web search.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1616,
+        128
+      ],
+      "id": "39273848-f305-4cb7-81cf-bfc6b1116c61",
+      "name": "Idea Generator",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"name\": \"name\",\n    \"idea\": \"idea\",\n    \"title\": \"title\",\n    \"text\": \"text\",\n    \"image\": \"image\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        448
+      ],
+      "id": "6b5f532b-42c3-4f86-b963-e4c926afdcaf",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1088,
+        128
+      ],
+      "id": "48b08887-751a-4811-89be-6a4723af23f4",
+      "name": "Schedule"
+    },
+    {
+      "parameters": {
+        "model": "sonar",
+        "messages": {
+          "message": [
+            {
+              "content": "=\n      \"content\": \"You're a professional content researcher inside the copywriting agency, you know how to search for interesting facts and articles to use in our media. You search for concrete stuff, facts and examples.\"\n    \n  \"temperature\": 0.2,\n  \"top_p\": 0.9,\n  \"return_images\": false,\n  \"return_related_questions\": false,\n  \"top_k\": 0,\n  \"stream\": false,\n  \"presence_penalty\": 0,\n  \"frequency_penalty\": 1,\n  \"response_format\": null\n}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        448
+      ],
+      "id": "53c06e1d-91df-4348-b967-3fa504af927c",
+      "name": "Message a model in Perplexity",
+      "credentials": {
+        "perplexityApi": {
+          "id": "MJP4K4ZI65WkiY8J",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1408,
+        384
+      ],
+      "id": "e3a1319d-b452-4905-aa62-6df1c9718663",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8edJLwdyWGvS4gmb",
+          "name": "punit api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "person": "ROiNw1VujI",
+        "text": "={{ $('Idea Generator').item.json.output.text }}",
+        "shareMediaCategory": "IMAGE",
+        "binaryPropertyName": "=data",
+        "additionalFields": {
+          "title": "={{ $('Idea Generator').item.json.output.title }}",
+          "visibility": "PUBLIC"
+        }
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        48
+      ],
+      "id": "1e6c8f9d-f41b-4b5c-a8c7-4404f71069ad",
+      "name": "Create a post",
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "UVj9Avxygi6icPk8",
+          "name": "LinkedIn account punit"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/imagen-4.0-ultra-generate-preview-06-06",
+          "mode": "list",
+          "cachedResultName": "models/imagen-4.0-ultra-generate-preview-06-06"
+        },
+        "prompt": "=You're a professional graphic designer.\n\nMake a new image in the style very very similar to the reference.\n\nCopy the style, spacing, minimalistic structure, especially copy the FONTS, and everything else.\n\nUse black and dark grainy film (mainly for the background), white and salad green (#cff150).\n\nMake the image super aestetic and minimalistic.\n\nMake it ratio 3:4 \n\nIt will be an image for a LinkedIn post.\n\nHere is the description of the new image: {{ $json.output.image }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2272,
+        144
+      ],
+      "id": "5bb6d89c-8aef-4386-9326-eb405ae102a7",
+      "name": "Generate an image1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "QMkWXMpMimIE3ue4",
+          "name": "ads zingy api gemni"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpRequestMethod": "POST",
+        "graphApiVersion": "v23.0",
+        "node": "17841475976864051",
+        "edge": "media",
+        "sendBinaryData": true,
+        "binaryPropertyName": "data",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "caption",
+                "value": "={{ $('Idea Generator').item.json.output.title }}\n\n{{ $('Idea Generator').item.json.output.text }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        2800,
+        336
+      ],
+      "id": "6c9d7224-c6d9-4797-aa7c-4b8dc0385c53",
+      "name": "Facebook Graph API",
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "9jROb2XX5ige1OHa",
+          "name": "Facebook Graph account punit"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=ROLE: You are an expert in converting long educational and storytelling posts into short, engaging Twitter/X posts under 280 characters.\n\nOBJECTIVE: Your goal is to take the long post text received from the previous node and rewrite it into a concise, high-impact Twitter post that maintains the core message, emotion, and hook.\n\nSCENARIO: The input text you receive comes from the previous node — a detailed long-form post about AI automation, AI agents, or n8n workflow learning. You must summarize it into a short, viral-style tweet that is easy to read and sparks curiosity or value for the audience.\n\nGUIDELINES:\n- Limit strictly to 250 characters or less.\n- Preserve the original meaning and insight.\n- Use plain, conversational language — no hashtags or emojis unless essential.\n- Make the first line a strong hook.\n- Keep the tone: futuristic, practical, and motivational for people learning AI automation.\n- Avoid jargon or unnecessary words.\n\nINPUT:{{ $json.output.text }}\n\nOUTPUT: A single rewritten short text post (under 280 characters) optimized for Twitter/X.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2064,
+        560
+      ],
+      "id": "c72396eb-be3f-4e6b-b2b7-7aacfc0e5f29",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BVvoQpK5AUx5q2ds",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.content.parts[0].text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        560
+      ],
+      "id": "cfdf0e95-00bb-457b-a3e9-1f0e3344b5ce",
+      "name": "Create Tweet",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "eVUUFw5qqREXDzZs",
+          "name": "X account punit"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Idea Generator": {
+      "main": [
+        [
+          {
+            "node": "Generate an image1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Idea Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule": {
+      "main": [
+        [
+          {
+            "node": "Idea Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "Idea Generator",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Idea Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image1": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Facebook Graph API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b4723d6d-0d57-4555-98b8-66b6412a734a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5060035da1ac148c5b2d3ed9879dffa23154fe6976553f55ae65cc32f34ebe1"
+  },
+  "id": "OxtLAFQVqFg2gaUb",
+  "tags": []
+}

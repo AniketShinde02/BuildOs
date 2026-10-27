@@ -1,0 +1,187 @@
+import pandas as pd
+
+categories = [
+    ("Studio & Minimalist", [
+        "Pure white seamless studio background, soft butterfly lighting, high-end commercial fashion photography.",
+        "Warm beige seamless paper backdrop, gentle rim lighting, 85mm lens depth of field, elegant minimalism.",
+        "Soft grey gradient studio wall, diffused overhead softbox lighting, ultra-minimal aesthetic.",
+        "Charcoal grey textured canvas backdrop, dramatic Rembrandt lighting, editorial fashion.",
+        "Pastel pink seamless studio background, bright even lighting, vibrant e-commerce look.",
+        "Off-white curved cyclorama wall, pristine natural sunlight effect from window.",
+        "Matte black seamless backdrop, strong key light with subtle fill, moody contrast.",
+        "Terracotta textured studio wall, warm sunset lighting simulation, earthly tones.",
+        "Pale blue studio backdrop, fresh morning daylight effect, clean and crisp.",
+        "Mint green seamless paper, soft diffused light, youthful fashion aesthetic.",
+        "Ivory white studio setup with subtle shadows, 50mm lens perspective, high key lighting.",
+        "Warm sand-colored canvas background, earthy aesthetic, soft side light.",
+        "Creamy white backdrop, glowing backlighting, ethereal and soft focus.",
+        "Light taupe studio wall, sharp directional lighting, modern e-commerce style.",
+        "Deep navy blue seamless background, dramatic spotlighting, luxury mood.",
+        "Olive green canvas backdrop, natural soft-fill lighting, botanical feel.",
+        "Blush pink seamless studio, soft box lighting, gentle and feminine.",
+        "Stone grey textured backdrop, cool daylight balanced lighting, raw and organic.",
+        "Soft lavender studio background, dreamlike hazy lighting, pastel aesthetics.",
+        "Rich burgundy canvas backdrop, classic portrait lighting, elegant and deep.",
+        "Mustard yellow seamless paper, vibrant hard lighting, pop art fashion.",
+        "Muted teal studio wall, cinematic lighting, sophisticated vibe.",
+        "Warm ochre canvas, natural sunlight streaming across, rustic warmth.",
+        "Pristine white geometric pedestals in studio, bright commercial lighting, modern.",
+        "Soft peach studio background, golden hour lighting effect, warm and inviting."
+    ]),
+    ("Indoor Luxury", [
+        "Luxury marble hallway, gold accents, soft sunlight filtering through large windows, 35mm lens.",
+        "High-end fashion boutique interior, warm ambient lighting, wooden flooring, rack of clothes in bokeh.",
+        "Elegant living room with beige velvet sofa, natural daylight, 85mm portrait depth of field.",
+        "Modern luxury villa interior, floor-to-ceiling windows, soft afternoon light, minimalist decor.",
+        "Grand staircase of a heritage palace, intricate carvings, golden warm lighting, editorial style.",
+        "Classic French apartment, ornate wall moldings, parquet flooring, soft Parisian sunlight.",
+        "Luxury hotel lobby, polished stone floors, warm incandescent lighting, sophisticated mood.",
+        "Opulent dining room with crystal chandelier, evening mood lighting, rich shadows.",
+        "Minimalist modern art gallery, stark white walls, spotlighting on subject, high contrast.",
+        "Vintage library with dark wood bookshelves, moody library lighting, intellectual vibe.",
+        "Sunlit conservatory filled with exotic plants, glass roof, bright natural light.",
+        "Elegant boudoir with silk drapes, soft romantic lighting, intimate setting.",
+        "Modern penthouse living area, city skyline out of focus, cool twilight lighting.",
+        "Luxury dressing room, illuminated mirrors, warm LED lighting, glamorous atmosphere.",
+        "Heritage mansion corridor, antique rugs, soft side lighting from tall windows.",
+        "Sleek modern kitchen, marble countertops, bright morning light, lifestyle fashion.",
+        "Opulent theatre lobby, red velvet, gold trim, dramatic theatrical lighting.",
+        "Cozy luxury cabin interior, crackling fireplace glow, warm winter lighting.",
+        "Grand ballroom, empty, polished wooden floor, soft diffused chandelier light.",
+        "Chic modern loft, exposed brick walls, large industrial windows, soft daylight.",
+        "Elegant spa interior, bamboo accents, tranquil blue and green lighting.",
+        "Luxury indoor pool area, reflective water patterns, bright natural sunlight.",
+        "Victorian drawing room, rich mahogany furniture, moody natural light.",
+        "Contemporary art studio, large canvases, bright diffused skylight.",
+        "High-end jewelry store interior, glass display cases, sparkling pinpoint lighting."
+    ]),
+    ("Outdoor Nature", [
+        "Lush botanical garden, vibrant green foliage, dappled sunlight, 85mm lens bokeh.",
+        "Sandy desert dunes at sunset, warm golden hour lighting, cinematic fashion shot.",
+        "Pristine white sand beach, clear blue sky, bright midday sun, tropical vibe.",
+        "Misty pine forest, soft diffused morning light, moody and atmospheric.",
+        "Sunflowers field in full bloom, bright summer daylight, cheerful and vibrant.",
+        "Snow-covered winter landscape, crisp clear blue sky, bright reflective light.",
+        "Autumn forest path, golden leaves falling, warm afternoon sunlight, cozy mood.",
+        "Rocky coastal cliff, crashing waves in background, dramatic overcast lighting.",
+        "Peaceful lakeside at dawn, still water reflections, soft pastel sky lighting.",
+        "Vast lavender field in Provence, golden hour lighting, romantic and fragrant.",
+        "Lush tropical rainforest, vibrant green monstera leaves, dappled canopy light.",
+        "Golden wheat field, warm setting sun, rustic and natural aesthetic.",
+        "Majestic mountain valley, clear alpine air, bright and crisp sunlight.",
+        "Quiet bamboo forest, tall green stalks, soft filtered green light.",
+        "Wildflower meadow in spring, bright morning sun, fresh and colorful.",
+        "Rugged canyon landscape, red rocks, harsh dramatic sunlight.",
+        "Serene Japanese garden, koi pond, soft overcast diffused light.",
+        "Sunlit olive grove, silvery green leaves, warm Mediterranean lighting.",
+        "Dramatic waterfall background, lush mossy rocks, cool misty lighting.",
+        "Vast open plains, stormy dramatic sky, moody and intense lighting.",
+        "Birch tree forest in winter, stark white trunks, soft flat winter light.",
+        "Blooming cherry blossom park, soft pink petals, gentle spring sunlight.",
+        "Lush vineyard on a rolling hill, warm afternoon sun, Tuscan vibe.",
+        "Mossy ancient forest, giant redwood trees, mystical dappled light.",
+        "Quiet riverbank at sunset, golden reflections on water, peaceful mood."
+    ]),
+    ("Traditional & Festive", [
+        "Traditional Indian palace courtyard, intricately carved sandstone, warm golden hour light.",
+        "Festive room decorated with glowing diyas, marigold flowers, warm ambient lighting.",
+        "Heritage haveli interior, stained glass windows casting colorful light patterns, cultural vibe.",
+        "Vibrant Indian street market, out of focus colorful fabrics, bright daylight.",
+        "Traditional temple architecture in background, stone pillars, soft morning light.",
+        "Festive mandap setup, draped with red and gold fabrics, bright ceremonial lighting.",
+        "Rajasthani desert fort, imposing stone walls, harsh dramatic sunlight.",
+        "South Indian traditional courtyard, rangoli on the floor, soft morning sunlight.",
+        "Diwali night setting, sparkling fairy lights, warm glowing illumination.",
+        "Holi festival backdrop, vibrant bursts of colored powder, bright joyful lighting.",
+        "Traditional Indian wedding stage, floral decorations, bright even floodlights.",
+        "Historic Mughal garden, flowing water channels, soft evening light.",
+        "Ancient stepwell structure, geometric shadows, harsh midday sun.",
+        "Colorful Rajasthani village street, painted walls, bright natural light.",
+        "Festive living room, torans on the door, warm welcoming sunlight.",
+        "Traditional Kerala houseboat on backwaters, soft sunset light.",
+        "Intricate wooden carved doorway of a heritage home, soft side lighting.",
+        "Vibrant Navratri garba pandal background, colorful lights, dynamic lighting.",
+        "Ghats of Varanasi at dawn, misty river, soft glowing sunrise light.",
+        "Traditional Bengali puja pandal, grand idols in bokeh, bright festive lights.",
+        "Historic Indian fort ramparts, panoramic view, golden hour sunlight.",
+        "Festive dining setup with brass utensils, warm intimate lighting.",
+        "Traditional village courtyard, mud walls, warm rustic sunlight.",
+        "Colorful kite festival sky, bright clear blue sky, festive atmosphere.",
+        "Majestic elephant decorated for festival in background, bright daylight."
+    ]),
+    ("Editorial Architecture", [
+        "Modern glass skyscraper exterior, reflective surfaces, sleek urban daylight.",
+        "Brutalist concrete architecture, harsh geometric shadows, dramatic lighting.",
+        "Neon-lit cyberpunk city street at night, rain-slicked pavement, vibrant reflections.",
+        "Minimalist museum exterior, sweeping white curves, bright high-key lighting.",
+        "Industrial warehouse loft, exposed steel beams, dramatic natural light from skylight.",
+        "Historic European cobblestone street, old streetlamps, moody evening light.",
+        "Futuristic sci-fi corridor, sleek white panels, cool blue LED lighting.",
+        "Vibrant Miami art deco building, pastel colors, bright harsh sunlight.",
+        "Sleek modern bridge structure, leading lines, dramatic sunset lighting.",
+        "Abandoned industrial factory, rusted metal, moody cinematic lighting.",
+        "Abstract geometric staircase, stark white walls, sharp angular shadows.",
+        "Modern subway station, clean tiles, bright fluorescent lighting.",
+        "Luxury rooftop terrace, city skyline at twilight, warm ambient lights.",
+        "Classic columns of a historic monument, imposing structure, bright daylight.",
+        "Sleek glass elevator interior, modern city view, cool urban light.",
+        "Contemporary art installation, glowing neon tubes, colorful dynamic lighting.",
+        "Gothic cathedral interior, towering arches, soft light through stained glass.",
+        "Modern minimalist plaza, concrete benches, bright open sunlight.",
+        "Urban alleyway with graffiti, gritty texture, moody side lighting.",
+        "Sleek airport terminal, large glass windows, bright diffused daylight.",
+        "Historic train station concourse, ornate ironwork, soft natural light.",
+        "Modern stadium architecture, sweeping curves, bright clear sky.",
+        "Luxury yacht deck, polished wood, bright marine sunlight.",
+        "Futuristic smart home exterior, sleek panels, twilight lighting.",
+        "Abstract metallic sculpture, reflective surfaces, dynamic lighting."
+    ]),
+    ("Abstract & Creative", [
+        "Floating silk fabric in motion, soft pastel background, ethereal lighting.",
+        "Surreal dreamscape with floating geometric shapes, soft pastel colors.",
+        "Holographic iridescent background, shimmering rainbow colors, dynamic light.",
+        "Liquid metal ripples, sleek silver tones, high contrast reflective lighting.",
+        "Vibrant abstract paint splashes, energetic movement, bright studio lights.",
+        "Soft billowing clouds, heavenly atmosphere, soft diffused backlighting.",
+        "Glowing neon grid in a dark void, synthwave aesthetic, vibrant colors.",
+        "Shattered glass fragments floating, dramatic spotlighting, high tension.",
+        "Soft flowing water ripples, crystal clear, bright sparkling light.",
+        "Abstract light painting trails, long exposure effect, vibrant energy.",
+        "Textured cracked earth, harsh dramatic lighting, raw and organic.",
+        "Soft glowing bokeh spheres, warm golden tones, magical atmosphere.",
+        "Abstract metallic foil crumpled, rich textures, dramatic side light.",
+        "Vibrant floral kaleidoscope pattern, symmetrical, bright even lighting.",
+        "Soft misty fog, mysterious atmosphere, cool blue tinted lighting.",
+        "Abstract crystal formations, sharp edges, glowing internal light.",
+        "Flowing molten gold, rich luxurious texture, warm glowing light.",
+        "Abstract paper art cutouts, layered depth, soft directional lighting.",
+        "Vibrant glitch art textures, digital distortion, energetic colors.",
+        "Soft swirling smoke, delicate wisps, moody dark background.",
+        "Abstract cellular structures, microscopic view, glowing bioluminescence.",
+        "Vibrant liquid ink swirling in water, dynamic movement, bright light.",
+        "Soft velvet fabric folds, rich deep colors, dramatic chiaroscuro lighting.",
+        "Abstract architectural wireframe, glowing lines, futuristic vibe.",
+        "Vibrant laser light show beams, energetic atmosphere, dark background."
+    ])
+]
+
+prompts_list = []
+bg_id = 1
+for theme, prompts in categories:
+    for prompt in prompts:
+        prompts_list.append({
+            "BG_ID": f"BG{bg_id:03d}",
+            "Theme": theme,
+            "Prompt": prompt
+        })
+        bg_id += 1
+
+# Load Excel file
+file_path = "d:\\Linkedin Automation\\PromptForge_Final_Assets_v2.xlsx"
+try:
+    with pd.ExcelWriter(file_path, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+        df_new = pd.DataFrame(prompts_list)
+        df_new.to_excel(writer, sheet_name="BACKGROUND_PROMPTS", index=False)
+    print("Successfully updated BACKGROUND_PROMPTS sheet.")
+except Exception as e:
+    print(f"Error: {e}")

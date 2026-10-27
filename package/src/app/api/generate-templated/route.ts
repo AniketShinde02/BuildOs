@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { cookies } from "next/headers";
 import { adminAuth } from "@/utils/firebase-admin";
 import { addDocAsUser, getDocAsUser } from "@/utils/firestore-rest";
+import { generateContentWithFallback } from '@/lib/ai/gateway';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const TEMPLATED_API_KEY = process.env.TEMPLATED_API_KEY || "";
 
 export async function POST(req: Request) {
@@ -48,7 +47,7 @@ export async function POST(req: Request) {
     const settingsData = await getDocAsUser(sessionCookie, 'settings', verifiedUserId);
     const userTone = settingsData?.tone || '';
 
-    // 3. Generate a 6-Slide Carousel via Gemini
+    // 3. Generate a 6-Slide Carousel via AI Gateway
     const systemPrompt = `
       ROLE: You are a ghostwriter creating a LinkedIn carousel for a specific engineer.
       
@@ -76,43 +75,30 @@ export async function POST(req: Request) {
       - Output strictly as JSON array of 6 objects.
     `;
 
-    // 3. Generate a 6-Slide Carousel via Gemini with Fallback Models
-    const modelsToTry = ["gemini-3.8-flash", "gemini-1.5-flash"];
-    let result = null;
-    let lastError = null;
+    const rawText = await generateContentWithFallback({
+      systemInstruction: systemPrompt,
+      prompt: "Generate the slides as specified.",
+      responseMimeType: "application/json",
+      requiredCapability: 'STRUCTURED_CONTENT'
+    });
 
-    for (const modelName of modelsToTry) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName, generationConfig: { responseMimeType: "application/json" } });
-        result = await model.generateContent(systemPrompt);
-        if (result && result.response.text()) {
-          console.log(`[generate-templated] Successfully generated using ${modelName}`);
-          break; 
-        }
-      } catch (err: any) {
-        console.warn(`[generate-templated] Model ${modelName} failed:`, err.message);
-        lastError = err;
-      }
+    if (!rawText) {
+      throw new Error(`All AI engines failed to generate carousel content.`);
     }
 
-    if (!result) {
-      throw new Error(`All Gemini models failed. Last error: ${lastError?.message}`);
-    }
-
-    let rawText = result.response.text();
-    // Sanitize any markdown code blocks Gemini might accidentally include
-    rawText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    // Sanitize any markdown code blocks that might accidentally be included
+    let cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
 
     let slides;
     try {
-      slides = JSON.parse(rawText);
+      slides = JSON.parse(cleanText);
     } catch {
-      console.error("Failed to parse Gemini output:", rawText);
+      console.error("Failed to parse output:", cleanText);
       throw new Error("AI returned invalid JSON format.");
     }
 
     if (!Array.isArray(slides) || slides.length === 0) {
-      throw new Error("Failed to generate slides array from Gemini.");
+      throw new Error("Failed to generate slides array from AI.");
     }
 
     // 4. Render all 6 slides via Templated API

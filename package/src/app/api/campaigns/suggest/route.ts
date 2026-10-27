@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminAuth } from "@/utils/firebase-admin";
 import { cookies } from "next/headers";
-import { generateContentWithFallback } from "@/lib/utils/aiFallback";
+import { generateContentWithFallback } from "@/lib/ai/gateway";
 import { HumanizerEngine } from "@/lib/studio/pipeline/HumanizerEngine";
 
 const TAVILY_API_KEY = process.env.TAVILY_API_KEY || "";

@@ -1,5 +1,114 @@
 # Changelog
 
+## [2026-09-30] — Content Intelligence Workspace + Real SSE Event Pipeline
+
+### Author
+- Antigravity AI
+- Machine: Local-Agent / JinWoo
+
+### Added
+- **ContentExecutionEvent protocol** (`ContentExecutionEvent.ts`): Structured event type with `stage`, `status`, `durationMs`, `agent`, `capability`, `provider`, `model`, `sources`, `toolCalls`, `errorCategory`, `retryable`.
+- **ContentEventBus** (`ContentEventBus.ts`): Per-job Node.js EventEmitter bus. SSE handlers subscribe; pipeline emits. Events auto-persist for replay on browser refresh.
+- **SSE stream route** (`/api/content/jobs/[id]/stream`): Replays all persisted events on connect (checkpoint recovery), then streams live events. Heartbeat every 15s. Cleans up on disconnect.
+- **Job snapshot route** (`/api/content/jobs/[id]`): Full job state including all events.
+- **Approval route** (`/api/content/jobs/[id]/approve`): POST to resume pipeline past `WAITING_FOR_APPROVAL` gate, with optional modification text.
+- **ExecutionTimeline component**: SSE-driven, deduplicating, animated timeline. Click any stage for detail. Real timestamps. No fake progress.
+- **ApprovalGate component**: Pauses UI at `WAITING_FOR_APPROVAL`. Shows topic, audience, angle, core insights, evidence count. Actions: Approve, Request Changes, Apply & Build.
+- **StageDetailPanel component**: Full stage metadata in right column. Developer mode shows jobId, eventId, provider, model, capability, errorCategory.
+- **Developer/Trace Mode toggle**: Shows extended trace data, provider/model/latency on every stage.
+- **Checkpoint persistence**: Active jobId stored in localStorage — browser refresh reconnects to SSE and replays full history.
+- **11-agent roster panel**: Shows each specialist as PENDING/RUNNING/COMPLETED/FAILED with real durations.
+
+### Changed
+- **ContentOperatingSystem.ts**: Every pipeline transition now emits a `ContentExecutionEvent` to the bus AND persists it to the job. Added approval gate (awaits `approvalGates` Promise before DRAFTING).
+- **ContentPackage model**: Added `events?: ContentExecutionEvent[]` field.
+- **Studio Create page**: Complete 3-column rebuild — Input+Timeline | Main Panel | Detail+Roster. SSE-driven with `useJobStream` hook.
+- **`/api/content/jobs` POST**: Now accepts `{ topic, audience }` from Campaigns page OR `{ prompt }` from Studio.
+
+### Fixed
+- All dynamic route params updated to `Promise<{id: string}>` for Next.js 16 compatibility.
+- `AIResearchTracker` `React.cloneElement` TS error resolved.
+
+## [2026-09-30] - AIGateway Immediate Fix & Absolute Render Gate
+
+
+### Author
+- Antigravity AI
+- Machine: Local-Agent
+
+### Changed
+- **AIGateway Timeout Policy**: Replaced global 20s timeout with strict capability-specific limits (e.g. `FAST_TEXT` = 4s).
+- **Health Management**: A single TIMEOUT now marks a model as `DEGRADED` rather than immediately disabling it or enforcing a 30s cooldown.
+- **Diagnostics Logging**: Added exact metadata metrics to the gateway catch block (`duration`, `timeoutMs`, `abortTriggered`, `upstreamStatus`).
+
+### Fixed
+- **Absolute Render Gate**: Added hard exception in `CreativeOSEngines.ts` when AI returns null, bypassing the empty heuristic fallback and preventing phantom `/api/og/render` calls.
+- **Timeout Loop**: AbortController now correctly propagates strict timeouts preventing the 20+ second serial failure loops on FAST_TEXT.
+
+### Added
+- **AI Benchmark**: Added `pnpm ai:benchmark` script (`scripts/benchmark.ts`) to measure actual TTFT and latency.
+
+## [2026-09-30] — Phase 87: 11-Specialist Agent Orchestration & AIGateway Rebuild
+
+### Author
+- Antigravity AI
+- Machine: JINWOO
+
+### Added
+- **11-Specialist Agent Architecture (src/lib/studio/agents/)**: Replaced the monolithic generation prompt with an 11-node orchestrated pipeline. Agents include IntentAnalyst, BrandStrategist, WebResearcher, HookWriter, StoryWeaver, SemanticReviewer, etc.
+- **Async Job Polling Engine (src/lib/studio/jobs/ContentJobEngine.ts)**: Replaced the blocking 20-second API calls with a non-blocking QUEUED -> RESEARCHING -> GENERATING -> VALIDATING -> READY state machine.
+- **Frontend Job Polling (DraftsClient.tsx & campaigns/page.tsx)**: Upgraded to async polling (setInterval hitting /api/content/jobs/[id]) with live UI progress mapping.
+- **OpenRouter Universal Gateway Integration (gateway.ts)**: Fully integrated OpenRouter as the primary routing layer, utilizing meta-llama/llama-3.3-70b-instruct for heavy reasoning/JSON tasks and google/gemini-2.5-flash for high-speed carousel planning.
+
+### Changed
+- **AIGateway Refactor (src/lib/ai/gateway.ts)**: Established as the sole entry point for AI routing. Hardcoded Gemini configurations completely ripped out.
+- **Fail-Closed Architecture**: Any stage failure now safely catches, logs, and marks the job as FAILED, preventing broken/hallucinated images from rendering.
+- **Satori Rendering Pipeline Guarantee**: Verified that the pipeline relies exclusively on the AI acting as an Art Director outputting strict JSON DesignSpecifications, strictly utilizing Vercel Satori for pixel-perfect SVGs rather than DALL-E pixel generation.
+
+### Removed
+- **Legacy Monolith DELETED**: Completely removed the outdated /api/generate-post/ blocking route.
+- **TypeScript Warnings**: Cleaned up all unused catch (_err: any) parameter linting warnings across the UI.
+
+## [2026-09-29] — Full System Recovery: Model Registry + Topic Fidelity + Type Safety
+
+### Author
+- Antigravity AI
+- Machine: JinWoo-PC (Windows)
+- Environment: local/dev — BuildOS Nexus 2026
+
+### Fixed
+- **[CRITICAL] AI Generation 500**: All Gemini 1.5/2.0 model IDs were returning 404 (deprecated for this account). `aiFallback.ts` completely rewritten with verified working models: `gemini-3.8-flash`, `gemini-3.5-flash`, `gemini-3.5-flash-lite`. API key confirmed valid.
+- **[CRITICAL] "Improve with AI" topic hijacking**: `campaigns/enhance/route.ts` was rewriting user topics entirely (e.g. "skills for designers" → "my 15-minute AI radar"). Fixed with Topic Fidelity Contract system prompt + semantic drift detection guard using keyword overlap heuristic.
+- **[HIGH] generate-post 500 on QA failure**: QA loop now non-blocking — if `reviewDesign()` throws or fails, content passes through with a warning rather than crashing the whole request.
+- **TS2345** `openDeleteModal` type narrowing in `DraftsClient.tsx` — widened to include `empty_pending` and `empty_approved`
+- **TS2339** `GraphicDesigner.ts` referencing stale `QualityScore.totalScore` / `.feedback` — updated to current interface (`.score`, `.issues`)
+- **TS2802** Set iteration in `enhance/route.ts` — replaced spread with `Array.from()`
+
+### Changed
+- **Model Registry Architecture**: `aiFallback.ts` rewritten from sequential array to capability-aware registry with proper failure classification:
+  - `404/deprecated` → PERMANENT (model never called again this session)
+  - `429/503/502/500/timeout` → TRANSIENT (exponential backoff + jitter, 30s → 300s cooldown)
+  - Added xAI Grok (`grok-3-mini`) as additional fallback provider
+  - Added `LONG_CONTEXT` capability type
+- **ScheduleClient.tsx**: Removed hardcoded Indigo/Slate hex colors, aligned with MUI Charcoal/Amber theme tokens (`primary.main`, `background.paper`, `divider`, etc.)
+- **DraftsClient.tsx**: Replaced horizontal thumbnail strip with interactive `DraftCarouselViewer` (1-up, left/right nav, pagination dots)
+- **DraftsClient.tsx**: Added "Auto-Queue" button on approved drafts — routes through Postiz with `scheduled: true`
+
+### Performance
+- `/api/campaigns/suggest` response: returns default suggestions in <1500ms via `Promise.race` (unchanged, confirmed working)
+- Generation engine: No longer exhausts all models before failing — stops at first PERMANENT hit
+
+### GitHub
+- Remote corrected from adminmart/Modernize-Nextjs-Free → AniketShinde02/BuildOs
+- First push to `origin/main` — 103 files, complete BuildOS Nexus codebase committed
+- Verified: `* [new branch] main -> main`
+
+### Notes
+- Source-map warnings from Next.js `node_modules/next/dist/compiled/` are Turbopack dev tooling noise — NOT application bugs. Safe to ignore.
+- `gemini-3.8-flash` is currently experiencing 503 intermittently — `gemini-3.5-flash-lite` serves as fallback.
+- Postiz `POSTIZ_API_KEY=postiz_local_dev_api_key` appears to be a placeholder — verify Docker stack is running for scheduling features.
+- LinkedIn token in `.env.local` may need refresh (60-day OAuth window).
+
 All notable changes to this project will be documented in this file.
 
 ## [2026-09-29] — Senior Engineering Humanizer Engine (85%+ Human Style), Tavily Live Trend Research & Smart Campaigns Repair
@@ -391,3 +500,22 @@ All notable changes to this project will be documented in this file.
 ### Security
 - Strengthened backend token validation on generation routes.
 - Bound generated images to `userId` to prevent data leakage across accounts.
+
+## [2026-09-29] — Final Architecture Acceptance Test & Central Gateway Migration
+
+### Author
+- Antigravity AI
+- Machine: Antigravity IDE
+
+### Changed
+- Refactored iFallback.ts to strictly adhere to Phase 30 architectural mandates: all model definitions (Google, Mistral, xAI, SenseNova) are now dynamically populated from environment variables (AI_TEXT_PRIMARY_PROVIDER, etc.) with safe defaults.
+- Completely scrubbed rogue AI provider implementations across the codebase (GraphicDesigner.ts, CreativeDirector.ts, generate/route.ts, generate-recap/route.ts, generate-templated/route.ts). All system generation now exclusively uses the unified generateContentWithFallback gateway, resolving the latency and parallel-failure issues.
+
+### Security
+- Eliminated hardcoded model arrays and fragmented prompt configurations, ensuring full traceability and centralized telemetry.
+
+### Performance
+- Removed ~20 seconds of compounding blocking requests caused by nested try-catch blocks manually hitting offline LLM providers. Failures are now bounded and rapidly fall back.
+
+### Notes
+- Successfully completed Phase 60 (Final Acceptance Test). A standalone test script proved that 429 errors from primary models immediately and correctly fail over to the secondary models defined in .env.local without stalling the Node thread.

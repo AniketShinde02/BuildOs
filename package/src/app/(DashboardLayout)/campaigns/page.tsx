@@ -37,8 +37,7 @@ export default function CampaignsPage() {
       if (!res.ok) throw new Error("Failed to load suggestions");
       const data = await res.json();
       setSuggestions(data.suggestions || []);
-    } catch (_err: any) {
-      console.error(_err);
+    } catch {
       showToast("Could not load AI suggestions", "error");
     } finally {
       setLoading(false);
@@ -62,7 +61,7 @@ export default function CampaignsPage() {
       setTopicInput(data.enhancedQuery);
       setAudienceInput(data.enhancedAudience || audienceInput);
       showToast("Query enhanced with AI", "success");
-    } catch (_err: any) {
+    } catch {
       showToast("Failed to enhance query", "error");
     } finally {
       setEnhancing(false);
@@ -76,15 +75,15 @@ export default function CampaignsPage() {
     }
     setGeneratingId(id);
     try {
-      const res = await fetch("/api/generate-post", {
+      const res = await fetch("/api/content/jobs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic, audience })
       });
       if (!res.ok) throw new Error("Failed to generate draft");
-      showToast("Draft generated successfully! Redirecting to queue...", "success");
+      showToast("Draft queued successfully! Redirecting to queue...", "success");
       setTimeout(() => router.push("/"), 1500);
-    } catch (_err: any) {
+    } catch {
       showToast("Failed to generate campaign", "error");
       setGeneratingId(null);
     }

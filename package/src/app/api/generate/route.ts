@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/utils/firebase';
 import { doc, getDoc, collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+import { generateContentWithFallback } from '@/lib/ai/gateway';
 
 export async function POST(request: Request) {
   try {
@@ -29,22 +27,23 @@ export async function POST(request: Request) {
     const repoName = eventData.payload?.repository?.name || 'project';
     const author = eventData.payload?.sender?.login || 'I';
 
-    // 3. Prompt Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' });
-    const prompt = `
-      You are a developer building a product in public.
-      Convert this recent GitHub work into a professional, engaging LinkedIn post.
-      Keep it authentic, focus on what was learned or built, and do not use generic AI buzzwords.
-      
+    // 3. Prompt AI Gateway
+    const systemInstruction = "You are a developer building a product in public. Convert this recent GitHub work into a professional, engaging LinkedIn post. Keep it authentic, focus on what was learned or built, and do not use generic AI buzzwords. Output ONLY the LinkedIn post text.";
+    const userPrompt = `
       Repository: ${repoName}
       Author: ${author}
       Commit Message: ${commitMessage}
-      
-      Output ONLY the LinkedIn post text.
     `;
 
-    const result = await model.generateContent(prompt);
-    const draftText = result.response.text();
+    const draftText = await generateContentWithFallback({
+      systemInstruction,
+      prompt: userPrompt,
+      requiredCapability: 'FAST_COPY'
+    });
+
+    if (!draftText) {
+      throw new Error("All AI engines failed to generate the post.");
+    }
 
     // 4. Save to Drafts collection
     const draftData = {

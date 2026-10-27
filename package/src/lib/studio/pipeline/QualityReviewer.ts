@@ -1,6 +1,6 @@
 'use server';
 
-import { generateContentWithFallback } from '@/lib/utils/aiFallback';
+import { generateContentWithFallback } from '@/lib/ai/gateway';
 
 export interface QualityScore {
   score: number;

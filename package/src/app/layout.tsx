@@ -1,10 +1,7 @@
-"use client";
-import { baselightTheme } from "@/utils/theme/DefaultColors";
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
 import './global.css'
 import { Agentation } from "agentation";
 import { GlobalToastProvider } from "@/app/GlobalToastProvider";
+import ThemeRegistry from './ThemeRegistry';
 
 export default function RootLayout({
   children,
@@ -14,13 +11,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        <ThemeProvider theme={baselightTheme}>
-          <CssBaseline />
+        <ThemeRegistry>
           <GlobalToastProvider>
             {children}
             {process.env.NODE_ENV === 'development' && <Agentation />}
           </GlobalToastProvider>
-        </ThemeProvider>
+        </ThemeRegistry>
       </body>
     </html>
   );

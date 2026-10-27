@@ -1,92 +1,99 @@
-<div align="center">
-   <a href="https://adminmart.com/" target="_blank">
-      <img src="https://adminmart.github.io/template_api/images/brand-logo/adminmart-Logo.svg" alt="modernize-image" width="100px" height="80px">
-   </a>
-</div>
+# BuildOS — Content Intelligence & Creative Operating System
 
-# [Modernize Free Next Js Admin Template](https://modernize-nextjs-free.vercel.app/)
-
-<!-- Main image of Template -->
-[![Next Js](https://adminmart.com/wp-content/uploads/2023/03/modernize-free-next-js-admin-template.png)](#)
-
-    
-# Modernize Free Next.js Admin Template
-
-A free, developer-friendly admin dashboard template built using **Next.js (v15)**, **Material UI (MUI v7)**, **React**, and **TypeScript**.  
-It provides a clean project structure, responsive design, and ready-made pages such as Dashboard, Login/Register, Typography, and Sample pages.  
-Distributed under the **MIT license**, it’s free for both personal and commercial use.
+BuildOS is an enterprise-grade AI-powered Content Intelligence and Creative Operating System designed for high-impact LinkedIn content creation, carousel generation, multi-stage agent orchestration, and automated social publishing.
 
 ---
 
-## ✨ Features
+## ✨ Key Capabilities
 
-- ⚡ Built with **Next.js 15**, **React**, **TypeScript**, and **MUI 7**
-- 📱 Fully responsive design
-- 🗂️ Organized folder structure
-- 🔑 Authentication pages (Login, Signup)
-- 📊 Dashboard, Typography, Sample layout pages
-- 🆓 Free under **MIT license**
-- 🚀 Lightweight and production-ready
+- 🤖 **10-Agent Pipeline (V2 Engine)**: Autonomous agent pipeline executing Intent Analysis, Research Planning, Web Research, Strategy, Drafting, Humanizing, Carousel Architecture, Visual Direction, and QA.
+- ⚡ **Real-Time Telemetry Streaming**: Low-latency Server-Sent Events (SSE) deliver live stage progress, execution latencies, and agent thought logs.
+- 🛡️ **Human-in-the-Loop Approval Gate**: Interactive preview allowing users to inspect and refine generated content briefs, angles, and key takeaways before rendering.
+- 🎨 **Multi-Slide Carousel Rendering**: Automated multi-slide generation powered by Satori with custom typography, layouts, and curated color palettes.
+- 🔄 **Multi-Tier AI Fallback Routing**: Resilient LLM cascading (SenseNova -> Mistral -> OpenRouter dynamic catalog) to guarantee 99.9% generation uptime.
+- 📱 **Social Media Publishing Hub**: Multi-channel distribution via Postiz and direct social API integrations.
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+[ Next.js 15 UI / Studio Workspace ]
+            │
+            ├──► POST /api/content/jobs (Start Job)
+            ├──► GET  /api/content/jobs/[id]/stream (SSE Telemetry Stream)
+            ├──► POST /api/content/jobs/[id]/approve (Human-in-the-Loop Gate)
+            │
+[ Content Operating System V2 Engine ]
+            │
+            ├──► 10 Specialized Agents (src/lib/studio/engine/v2/agents/)
+            ├──► Event-Driven EventBus (ContentEventBus.ts)
+            └──► Multi-Slide Satori Renderer (Satori / Canvas)
+```
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/adminmart/Modernize-Nextjs-Free.git
-```
+### 1. Prerequisites
+- Node.js 18+ (Node 20+ recommended)
+- `pnpm` or `npm`
+- Docker (optional, for Postiz publishing services)
 
-### 2. Navigate to the project
+### 2. Installation
 ```bash
-cd Modernize-Nextjs-Free/package
-```
+# Navigate to package directory
+cd BuildOS/package
 
-### 3. Install dependencies
-```bash
+# Install dependencies
 npm install
 ```
 
-### 4. Run in development mode
+### 3. Environment Configuration
+Ensure `.env.local` exists in `BuildOS/package/` with appropriate API keys:
+```env
+PORT=3001
+SENSENOVA_API_KEY=your_sensenova_key
+MISTRAL_API_KEY=your_mistral_key
+OPENROUTER_API_KEY=your_openrouter_key
+```
+
+### 4. Development Server
 ```bash
+# Start the web development server (Port 3001)
 npm run dev
-```
 
-### 5. Build for production
-```bash
-npm run build
+# Or start with background publishing services
+npm run dev:all
 ```
-## 📂 Pages Included
-
-- Dashboard  
-- Login & Signup  
-- Typography  
-- Sample Layout  
 
 ---
 
+## 📂 Key Directory Structure
 
-## 📊 Summary Table
-
-| Aspect           | Details                                                 |
-|------------------|---------------------------------------------------------|
-| Framework        | Next.js (v15), React, TypeScript, Material UI (v7)      |
-| Pages Included   | Dashboard, Login/Register, Typography, Sample           |
-| Design           | Responsive, MUI-styled, clean and modern                |
-| License          | MIT – Free for personal and commercial use              |
-| Getting Started  | Clone → npm install → npm run dev → npm run build       |
-| Pro Version      | 65+ pages, NextAuth/Firebase auth, Dark mode, Figma     |
+```
+BuildOS/package/
+├── src/
+│   ├── app/
+│   │   ├── (DashboardLayout)/
+│   │   │   └── studio/             # Studio UI & Generation Workspace
+│   │   │       ├── components/     # ExecutionTimeline, ApprovalGate, etc.
+│   │   │       └── create/         # Studio Creation Page
+│   │   └── api/
+│   │       └── content/jobs/       # Job Lifecycle, SSE Stream & Approval routes
+│   ├── lib/
+│   │   ├── studio/engine/v2/       # Content Operating System & 10 Agents
+│   │   └── publishers/             # Postiz & Social Adapters
+│   └── utils/                      # Theme, Formatting & Configs
+├── .agents/                        # AI Engineering Guardrails & Skills
+├── CHANGELOG.md                    # Detailed Version History & Release Notes
+├── ARCHITECTURE.md                 # System Topology & Data Lineage
+├── CONSTRAINTS.md                  # Engineering Guardrails & Rules
+└── HANDOVER.md                     # Active Project State & Handover Notes
+```
 
 ---
 
 ## 📜 License
+MIT License — Free for personal and commercial use.
 
-This project is licensed under the **MIT License** – you can use it for personal and commercial projects.
-
----
-
-## 📧 Support
-
-For more info or query, visit [AdminMart](https://adminmart.com).
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

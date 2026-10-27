@@ -46,30 +46,45 @@ export class NativeLinkedInAdapter implements PublisherAdapter {
     }
 
     try {
-      // 1. Resolve author URN
+      // 1. Resolve author URN (Organization priority over Person)
       let personUrn = process.env.LINKEDIN_AUTHOR_URN;
       
       if (!personUrn) {
-        const uiRes = await fetch("https://api.linkedin.com/v2/userinfo", {
-          headers: { Authorization: `Bearer ${this.token}`, "LinkedIn-Version": "202401" },
+        // Try to fetch organization first to post to company page (e.g. Aniket.work)
+        const orgRes = await fetch("https://api.linkedin.com/v2/organizationAcls?q=roleAssignee", {
+          headers: { Authorization: `Bearer ${this.token}`, "LinkedIn-Version": "202401", "X-Restli-Protocol-Version": "2.0.0" },
         });
-        
-        if (uiRes.ok) {
-          const uiData = await uiRes.json();
-          personUrn = `urn:li:person:${uiData.sub}`;
-        } else {
-          const meRes = await fetch("https://api.linkedin.com/v2/me", {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "X-Restli-Protocol-Version": "2.0.0",
-              "LinkedIn-Version": "202401"
-            },
-          });
-          if (!meRes.ok) {
-            return { success: false, platform: this.name, error: `Auth failed (${meRes.status}). Ensure LINKEDIN_AUTHOR_URN is in .env.local if scopes are limited.` };
+
+        if (orgRes.ok) {
+          const orgData = await orgRes.json();
+          if (orgData.elements && orgData.elements.length > 0) {
+            personUrn = orgData.elements[0].organization; // format: urn:li:organization:12345
           }
-          const meData = await meRes.json();
-          personUrn = `urn:li:person:${meData.id}`;
+        }
+
+        // Fallback to Person URN if no organization is found
+        if (!personUrn) {
+          const uiRes = await fetch("https://api.linkedin.com/v2/userinfo", {
+            headers: { Authorization: `Bearer ${this.token}`, "LinkedIn-Version": "202401" },
+          });
+          
+          if (uiRes.ok) {
+            const uiData = await uiRes.json();
+            personUrn = `urn:li:person:${uiData.sub}`;
+          } else {
+            const meRes = await fetch("https://api.linkedin.com/v2/me", {
+              headers: {
+                Authorization: `Bearer ${this.token}`,
+                "X-Restli-Protocol-Version": "2.0.0",
+                "LinkedIn-Version": "202401"
+              },
+            });
+            if (!meRes.ok) {
+              return { success: false, platform: this.name, error: `Auth failed (${meRes.status}). Ensure LINKEDIN_AUTHOR_URN is in .env.local if scopes are limited.` };
+            }
+            const meData = await meRes.json();
+            personUrn = `urn:li:person:${meData.id}`;
+          }
         }
       }
 

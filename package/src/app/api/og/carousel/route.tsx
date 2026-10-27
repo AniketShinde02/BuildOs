@@ -67,7 +67,9 @@ export async function GET(request: Request) {
     if (specRaw) {
       try {
         spec = JSON.parse(decodeURIComponent(specRaw));
-      } catch (e) {}
+      } catch {
+        // use default empty spec if malformed
+      }
     }
 
     // Support legacy spec OR the new canonical slideData format

@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     const docRef = await addDoc(collection(db, 'Events'), docData);
     console.log('3. Added with ID', docRef.id);
 
-    // Normally, here we would trigger the Gemini Agent to draft a post.
+    // Normally, here we would trigger the AI Agent to draft a post.
     // For now, we just save the raw event to Firestore.
 
     return NextResponse.json({ success: true, id: docRef.id }, { status: 200 });

@@ -295,22 +295,51 @@ export default function DraftsClient() {
     }, 4500);
     
     try {
-      const res = await fetch('/api/generate-post', { 
+      const res = await fetch('/api/content/jobs', { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic: topicGuess, audience: audienceGuess })
       });
       
-      if (!res.ok) throw new Error('Failed to generate campaign');
+      if (!res.ok) throw new Error('Failed to start campaign job');
+      const { jobId } = await res.json();
       
-      setIsModalOpen(false);
-      setPromptText('');
-      showToast('✨ AI Draft generated! Check your queue.', 'success');
+      const pollTimer = setInterval(async () => {
+        try {
+           const jobRes = await fetch(`/api/content/jobs/${jobId}`);
+           if (jobRes.ok) {
+              const job = await jobRes.json(); // API returns job directly, not { job }
+              if (job.status === 'READY' || job.status === 'FAILED') {
+                 clearInterval(pollTimer);
+                 clearInterval(stepTimer);
+                 setIsModalOpen(false);
+                 setPromptText('');
+                 setIsGenerating(false);
+                 setGeneratingStep(0);
+                 if (job.status === 'READY') {
+                   showToast('✨ AI Draft generated! Check your queue.', 'success');
+                 } else {
+                   showToast('Error generating campaign: ' + job.error, 'error');
+                 }
+              } else {
+                 if (job.status === 'RESEARCHING') setGeneratingStep(0);
+                 else if (job.status === 'DRAFTING') setGeneratingStep(1);
+                 else if (job.status === 'QA') setGeneratingStep(2);
+                 // WAITING_FOR_APPROVAL: auto-approve from dashboard flow (no UI gate here)
+                 else if (job.status === 'WAITING_FOR_APPROVAL') {
+                   await fetch(`/api/content/jobs/${jobId}/approve`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+                 }
+              }
+           }
+        } catch (e) {
+           console.error("Polling error", e);
+        }
+      }, 2000);
+
     } catch (error) {
-      console.error(error);
-      showToast('Error generating campaign. Try again.', 'error');
-    } finally {
       clearInterval(stepTimer);
+      console.error(error);
+      showToast('Error starting campaign job. Try again.', 'error');
       setIsGenerating(false);
       setGeneratingStep(0);
     }

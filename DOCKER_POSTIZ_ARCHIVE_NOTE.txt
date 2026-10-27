@@ -1,0 +1,32 @@
+DOCKER & POSTIZ ARCHIVE NOTE
+================================
+
+Status: ARCHIVED & REMOVED FOR DISK SPACE OPTIMIZATION
+Date: October 27, 2026
+Space Reclaimed: ~24.5 GB (Directory shrunk from ~26 GB down to ~1.5 GB)
+
+CAN LINKEDIN AUTOMATION RUN WITHOUT DOCKER?
+-------------------------------------------
+YES, 100% INDEPENDENTLY.
+Our custom coded LinkedIn automation engine does NOT require Docker, Postiz, PostgreSQL, or Redis.
+It runs as a native Next.js 16 application on port 3001 using:
+1. NativeLinkedInAdapter (Direct official LinkedIn REST API v2 calls)
+2. Studio Engine v2 (Direct Google Gemini API via @google/generative-ai)
+3. Satori Image Generator (Native Next.js Satori using local fonts in public/fonts/)
+4. Firebase Firestore (Direct cloud database for drafts & credentials)
+
+WHAT WAS REMOVED:
+-----------------
+1. d:\Linkedin Automation\font-library\ (16.88 GB) - External 1800+ font repository clone, completely unused.
+2. d:\Linkedin Automation\BuildOS\package\public\fonts\fontsource\ (0.87 GB) - Incomplete .git directory clone.
+3. d:\Linkedin Automation\.code-review-graph\graph.db (3.51 GB) - Cache generated when indexing the 16.88 GB font directory.
+4. d:\Linkedin Automation\BuildOS\.code-review-graph\graph.db (3.23 GB) - Duplicate cache in BuildOS.
+5. docker-compose.yml (in Root and in BuildOS\package\) - Removed Postiz/Postgres/Redis Docker compose configs.
+
+HOW TO RUN LINKEDIN AUTOMATION NOW:
+-----------------------------------
+cd "d:\Linkedin Automation\BuildOS\package"
+npm run dev
+Open: http://localhost:3001
+
+See DOCKER_POSTIZ_ARCHIVE_NOTE.md for complete docker-compose.yml restoration instructions if ever needed.

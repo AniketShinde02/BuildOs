@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { adminAuth } from "@/utils/firebase-admin";
 import { cookies } from "next/headers";
-import { generateContentWithFallback } from "@/lib/utils/aiFallback";
+import { generateContentWithFallback } from "@/lib/ai/gateway";
 
 export async function POST(req: Request) {
   try {
